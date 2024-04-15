@@ -145,14 +145,4 @@ public class SodiumFabricHelpers implements SodiumPlatformHelpers {
     public boolean shouldRenderIE(SectionPos position) {
         return false;
     }
-
-    @Override
-    public void renderAdditionalRenderers(List<?> renderers, Function<RenderType, VertexConsumer> typeToConsumer, LevelSlice slice) {
-        // Fabric has no concept of additional chunk renderers; everything is handled through FRAPI.
-    }
-
-    @Override
-    public List<?> getExtraRenderers(Level level, BlockPos origin) {
-        return List.of();
-    }
 }

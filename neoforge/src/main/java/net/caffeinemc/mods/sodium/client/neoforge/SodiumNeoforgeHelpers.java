@@ -61,7 +61,11 @@ public class SodiumNeoforgeHelpers implements SodiumPlatformHelpers {
 
     @Override
     public Object getRenderData(Level level, ChunkPos pos, BlockEntity value) {
-        return level.getModelDataManager().getAt(pos);
+        if (pos == null) {
+            return null;
+        } else {
+            return level.getModelDataManager().getAt(pos);
+        }
     }
 
     @Override
