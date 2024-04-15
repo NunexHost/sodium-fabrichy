@@ -24,22 +24,23 @@ import net.minecraft.core.SectionPos;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.BlockAndTintGetter;
 import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import net.minecraft.world.level.material.FluidState;
-import net.neoforged.fml.loading.FMLConfig;
-import net.neoforged.fml.loading.FMLLoader;
-import net.neoforged.fml.loading.FMLPaths;
-import net.neoforged.neoforge.client.ClientHooks;
-import net.neoforged.neoforge.client.event.AddSectionGeometryEvent;
-import net.neoforged.neoforge.client.model.data.ModelData;
-import net.neoforged.neoforge.client.model.data.ModelDataManager;
+import net.minecraftforge.client.ForgeHooksClient;
+import net.minecraftforge.fml.loading.FMLConfig;
+import net.minecraftforge.fml.loading.FMLLoader;
+import net.minecraftforge.fml.loading.FMLPaths;
+import net.minecraftforge.client.model.data.ModelData;
+import net.minecraftforge.client.model.data.ModelDataManager;
 import org.joml.Matrix4f;
 
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Function;
 
 public class SodiumNeoforgeHelpers implements SodiumPlatformHelpers {
@@ -59,9 +60,8 @@ public class SodiumNeoforgeHelpers implements SodiumPlatformHelpers {
     }
 
     @Override
-    public Object getRenderData(Level level, BoundingBox pos, BlockEntity value) {
-        return level.getModelDataManager().snapshotSectionRegion(pos.minX() >> 4, pos.minY() >> 4, pos.minZ() >> 4,
-                pos.maxX() >> 4, pos.maxY() >> 4, pos.maxZ() >> 4);
+    public Object getRenderData(Level level, ChunkPos pos, BlockEntity value) {
+        return level.getModelDataManager().getAt(pos);
     }
 
     @Override
@@ -86,8 +86,8 @@ public class SodiumNeoforgeHelpers implements SodiumPlatformHelpers {
 
     @Override
     public Object getModelData(Object o, BlockPos pos) {
-        if ((o instanceof ModelDataManager.Snapshot)) {
-            return ((ModelDataManager.Snapshot) o).getAtOrEmpty(pos);
+        if ((o instanceof Map)) {
+            return ((Map<BlockPos, ModelData>) o).getOrDefault(pos, ModelData.EMPTY);
         } else {
             return ModelData.EMPTY;
         }
@@ -120,7 +120,7 @@ public class SodiumNeoforgeHelpers implements SodiumPlatformHelpers {
 
     @Override
     public void runChunkLayerEvents(RenderType renderType, LevelRenderer levelRenderer, PoseStack poseStack, Matrix4f projectionMatrix, int renderTick, Camera camera, Frustum frustum) {
-        ClientHooks.dispatchRenderStage(renderType, levelRenderer, poseStack, projectionMatrix, renderTick, camera, frustum);
+        ForgeHooksClient.dispatchRenderStage(renderType, levelRenderer, poseStack, projectionMatrix, renderTick, camera, frustum);
     }
 
     @Override
@@ -151,21 +151,5 @@ public class SodiumNeoforgeHelpers implements SodiumPlatformHelpers {
     @Override
     public boolean shouldRenderIE(SectionPos position) {
         return ImmersiveEngineeringCompat.isLoaded && ImmersiveEngineeringCompat.sectionNeedsRendering(position);
-    }
-
-    @Override
-    public List<?> getExtraRenderers(Level level, BlockPos origin) {
-        return ClientHooks.gatherAdditionalRenderers(origin, level);
-    }
-
-    private static final ThreadLocal<PoseStack> emptyStack = ThreadLocal.withInitial(PoseStack::new);
-
-    @Override
-    public void renderAdditionalRenderers(List<?> renderers, Function<RenderType, VertexConsumer> typeToConsumer, LevelSlice slice) {
-        AddSectionGeometryEvent.SectionRenderingContext context = new AddSectionGeometryEvent.SectionRenderingContext(typeToConsumer, slice, emptyStack.get());
-        for (int i = 0, renderersSize = renderers.size(); i < renderersSize; i++) {
-            AddSectionGeometryEvent.AdditionalSectionRenderer renderer = (AddSectionGeometryEvent.AdditionalSectionRenderer) renderers.get(i);
-            renderer.render(context);
-        }
     }
 }
