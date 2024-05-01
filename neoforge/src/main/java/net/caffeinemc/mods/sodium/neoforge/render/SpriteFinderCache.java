@@ -1,6 +1,7 @@
-package net.caffeinemc.mods.sodium.client.neoforge;
+package net.caffeinemc.mods.sodium.neoforge.render;
 
 import net.caffeinemc.mods.sodium.neoforge.mixin.TextureAtlasAccessor;
+import net.caffeinemc.mods.sodium.neoforge.BlockSpriteFinder;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.resources.model.ModelManager;
